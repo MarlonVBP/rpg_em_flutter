@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Launch Chrome",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "name": "Flutter (lib\\terceiraPagina.dart)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib\\terceiraPagina.dart"
+        }
+    ]
+}

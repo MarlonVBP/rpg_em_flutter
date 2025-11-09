@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "154909568475",
+    "firebase_url": "https://gameflutter-33842-default-rtdb.firebaseio.com",
+    "project_id": "gameflutter-33842",
+    "storage_bucket": "gameflutter-33842.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154909568475:android:34838bb985147f72e8cbfe",
+        "android_client_info": {
+          "package_name": "com.example.teste"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9eSiAAlUZEycDLaYHScW8y8rvlhj937A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
