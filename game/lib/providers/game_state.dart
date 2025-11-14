@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:teste/models/item_model.dart';
 import 'package:teste/models/quest_model.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:teste/models/user_model.dart';
 
-//
 final List<HeroCharacter> defaultHeroes = [
   HeroCharacter(
     name: 'Guerreiro velho',
@@ -21,8 +21,6 @@ final List<HeroCharacter> defaultHeroes = [
       heroClass: 'Ladino'),
 ];
 
-//
-//
 const List<GameItem> allGameItems = [
   GameItem(
       name: 'Poção de Cura',
@@ -55,6 +53,7 @@ const List<GameItem> allGameItems = [
 
 class GameState with ChangeNotifier {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+  final User? _currentUser;
 
   HeroCharacter? selectedHero;
   String? selectedScenario;
@@ -63,13 +62,17 @@ class GameState with ChangeNotifier {
   int playerGold = 0;
   List<HeroCharacter> availableHeroes = [];
 
-  final String _userId = "testUser123";
+  String? get currentUserId => _currentUser?.uid;
 
-  GameState() {
+  GameState(this._currentUser) {
     _initializeQuests();
 
-    loadHeroes();
-    _loadGameData();
+    if (currentUserId != null) {
+      loadHeroes();
+      _loadGameData();
+    } else {
+      availableHeroes = List.from(defaultHeroes);
+    }
   }
 
   void _initializeQuests() {
@@ -106,7 +109,9 @@ class GameState with ChangeNotifier {
   }
 
   void _loadGameData() {
-    _dbRef.child('users/$_userId').onValue.listen((event) {
+    if (currentUserId == null) return;
+
+    _dbRef.child('users/$currentUserId').onValue.listen((event) {
       final data = event.snapshot.value;
 
       if (data != null && data is Map) {
@@ -149,9 +154,11 @@ class GameState with ChangeNotifier {
   }
 
   Future<void> loadHeroes() async {
+    if (currentUserId == null) return;
+
     final prefs = await SharedPreferences.getInstance();
     try {
-      _dbRef.child('users/$_userId/heroes').onValue.listen((event) {
+      _dbRef.child('users/$currentUserId/heroes').onValue.listen((event) {
         final data = event.snapshot.value;
         if (data != null && data is Map) {
           final heroesMap = Map<String, dynamic>.from(data);
@@ -165,7 +172,7 @@ class GameState with ChangeNotifier {
         }
 
         final String? lastSelectedHeroName =
-            prefs.getString('last_selected_hero');
+            prefs.getString('last_selected_hero_$currentUserId');
         if (lastSelectedHeroName != null) {
           try {
             selectedHero = availableHeroes
@@ -187,11 +194,12 @@ class GameState with ChangeNotifier {
   }
 
   Future<void> _saveHeroesToFirebase() async {
+    if (currentUserId == null) return;
     Map<String, dynamic> heroesMap = {
       for (var hero in availableHeroes) hero.name: hero.toJson()
     };
     try {
-      await _dbRef.child('users/$_userId/heroes').set(heroesMap);
+      await _dbRef.child('users/$currentUserId/heroes').set(heroesMap);
     } catch (e) {
       if (kDebugMode) {
         print("Erro ao salvar heróis no Firebase: $e");
@@ -200,9 +208,10 @@ class GameState with ChangeNotifier {
   }
 
   Future<void> _updateHeroInFirebase(HeroCharacter hero) async {
+    if (currentUserId == null) return;
     try {
       await _dbRef
-          .child('users/$_userId/heroes/${hero.name}')
+          .child('users/$currentUserId/heroes/${hero.name}')
           .update(hero.toJson());
     } catch (e) {
       if (kDebugMode) {
@@ -212,9 +221,10 @@ class GameState with ChangeNotifier {
   }
 
   Future<void> _addHeroToFirebase(HeroCharacter hero) async {
+    if (currentUserId == null) return;
     try {
       await _dbRef
-          .child('users/$_userId/heroes/${hero.name}')
+          .child('users/$currentUserId/heroes/${hero.name}')
           .set(hero.toJson());
     } catch (e) {
       if (kDebugMode) {
@@ -224,9 +234,10 @@ class GameState with ChangeNotifier {
   }
 
   Future<void> _savePlayerInventory() async {
+    if (currentUserId == null) return;
     List<String> itemNames = playerInventory.map((item) => item.name).toList();
     try {
-      await _dbRef.child('users/$_userId/playerInventory').set(itemNames);
+      await _dbRef.child('users/$currentUserId/playerInventory').set(itemNames);
     } catch (e) {
       if (kDebugMode) {
         print("Erro ao salvar inventário no Firebase: $e");
@@ -235,8 +246,9 @@ class GameState with ChangeNotifier {
   }
 
   Future<void> _savePlayerGold() async {
+    if (currentUserId == null) return;
     try {
-      await _dbRef.child('users/$_userId/playerGold').set(playerGold);
+      await _dbRef.child('users/$currentUserId/playerGold').set(playerGold);
     } catch (e) {
       if (kDebugMode) {
         print("Erro ao salvar ouro no Firebase: $e");
@@ -245,9 +257,10 @@ class GameState with ChangeNotifier {
   }
 
   Future<void> _saveQuestStatus(String questId, bool isCompleted) async {
+    if (currentUserId == null) return;
     try {
       await _dbRef
-          .child('users/$_userId/questStatus')
+          .child('users/$currentUserId/questStatus')
           .update({questId: isCompleted});
     } catch (e) {
       if (kDebugMode) {
@@ -288,6 +301,8 @@ class GameState with ChangeNotifier {
   }
 
   void selectHero(HeroCharacter hero) async {
+    if (currentUserId == null) return;
+
     selectedHero = hero;
 
     bool heroExists = availableHeroes.any((h) => h.name == hero.name);
@@ -298,7 +313,7 @@ class GameState with ChangeNotifier {
     }
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('last_selected_hero', hero.name);
+    await prefs.setString('last_selected_hero_$currentUserId', hero.name);
 
     notifyListeners();
   }

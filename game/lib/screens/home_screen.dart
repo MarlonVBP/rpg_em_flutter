@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:teste/providers/game_state.dart';
 import 'package:teste/screens/characters_screen.dart' as characters;
@@ -7,13 +5,15 @@ import 'package:teste/screens/items_screen.dart' as items;
 import 'package:teste/screens/quests_screen.dart' as quests;
 import 'package:teste/screens/cities_screen.dart' as cities;
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
+import 'package:teste/providers/auth_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     return Consumer<GameState>(
       builder: (context, gameState, child) {
         return Scaffold(
@@ -94,7 +94,9 @@ class HomeScreen extends StatelessWidget {
                       context: context,
                       icon: Icons.exit_to_app,
                       label: 'Sair do Jogo',
-                      onPressed: kIsWeb ? () {} : () => exit(0),
+                      onPressed: () {
+                        authProvider.logout();
+                      },
                       isPrimary: false,
                     ),
                   ],
@@ -107,7 +109,21 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusCard(BuildContext context, GameState gameState) {
+  Widget _buildStatusCard(BuildContext context, GameState? gameState) {
+    if (gameState == null) {
+      return Card(
+        color: Colors.black.withOpacity(0.7),
+        child: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
+
     final completedQuests = gameState.quests.where((q) => q.isCompleted).length;
     final totalQuests = gameState.quests.length;
 
@@ -149,11 +165,11 @@ class HomeScreen extends StatelessWidget {
                       .replaceAll('_', ' ') ??
                   "Nenhum",
             ),
-             _statusTile(
-            icon: Icons.assignment_turned_in,
-            label: 'Missões Concluídas',
-            value: '$completedQuests / $totalQuests',
-          ),
+            _statusTile(
+              icon: Icons.assignment_turned_in,
+              label: 'Missões Concluídas',
+              value: '$completedQuests / $totalQuests',
+            ),
           ],
         ),
       ),
