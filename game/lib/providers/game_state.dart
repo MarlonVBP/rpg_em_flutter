@@ -7,6 +7,7 @@ import 'package:teste/models/quest_model.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:teste/models/user_model.dart';
 
+// Lista de Heróis Padrão
 final List<HeroCharacter> defaultHeroes = [
   HeroCharacter(
     name: 'Guerreiro velho',
@@ -21,6 +22,7 @@ final List<HeroCharacter> defaultHeroes = [
       heroClass: 'Ladino'),
 ];
 
+// Lista de Itens Padrão
 const List<GameItem> allGameItems = [
   GameItem(
       name: 'Poção de Cura',
@@ -58,24 +60,31 @@ class GameState with ChangeNotifier {
   HeroCharacter? selectedHero;
   String? selectedScenario;
   List<GameItem> playerInventory = [];
-  List<Quest> quests = [];
+  List<Quest> quests = []; // Lista de missões (começa vazia)
   int playerGold = 0;
   List<HeroCharacter> availableHeroes = [];
 
   String? get currentUserId => _currentUser?.uid;
 
   GameState(this._currentUser) {
+    // 1. Carrega as missões pré-definidas localmente
     _initializeQuests();
 
+    // 2. Se o usuário estiver logado, carrega/sincroniza seus dados
     if (currentUserId != null) {
       loadHeroes();
       _loadGameData();
     } else {
+      // Se não houver usuário, apenas carrega os heróis padrão
       availableHeroes = List.from(defaultHeroes);
     }
   }
 
+  // =================================================================
+  // CARREGA AS MISSÕES LOCALMENTE (COMO VOCÊ PEDIU)
+  // =================================================================
   void _initializeQuests() {
+    // Define os chefes localmente
     final bosses = [
       EnemyCharacter(
           name: 'Círculo Vermelho da Fúria',
@@ -94,6 +103,7 @@ class GameState with ChangeNotifier {
           goldReward: 120),
     ];
 
+    // Define as missões localmente
     quests = [
       Quest(
           id: 'boss1',
@@ -106,11 +116,17 @@ class GameState with ChangeNotifier {
           description: 'Enfrente o Círculo Sombrio que emerge das ruínas.',
           boss: bosses[1]),
     ];
+    // Não é preciso notificar (notifyListeners) aqui,
+    // pois isso acontece no construtor.
   }
 
+  // =================================================================
+  // CARREGA OS DADOS DO JOGADOR E SINCRONIZA AS MISSÕES
+  // =================================================================
   void _loadGameData() {
     if (currentUserId == null) return;
 
+    // Ouve os dados do usuário (ouro e inventário)
     _dbRef.child('users/$currentUserId').onValue.listen((event) {
       final data = event.snapshot.value;
 
@@ -135,23 +151,69 @@ class GameState with ChangeNotifier {
             }
           }
         }
-
-        final Map<dynamic, dynamic>? questStatus =
-            userData['questStatus'] as Map<dynamic, dynamic>?;
-        if (questStatus != null) {
-          for (final quest in quests) {
-            quest.isCompleted = questStatus[quest.id] as bool? ?? false;
-          }
-        }
       }
-
       notifyListeners();
     }, onError: (error) {
       if (kDebugMode) {
         print("Erro ao carregar dados do jogo: $error");
       }
     });
+
+    // Ouve SEPARADAMENTE o progresso das missões
+    _dbRef.child('users/$currentUserId/questStatus').onValue.listen((event) {
+      final data = event.snapshot.value;
+
+      if (data != null && data is Map) {
+        // Se os dados existem, carrega o progresso
+        final questStatus = Map<dynamic, dynamic>.from(data);
+        for (final quest in quests) {
+          quest.isCompleted = questStatus[quest.id] as bool? ?? false;
+        }
+      } else {
+        // Se os dados NÃO existem (ex: 1º login),
+        // salva o progresso inicial (todas false) no banco
+        _uploadInitialQuestStatus();
+      }
+      notifyListeners();
+    });
   }
+
+  // NOVO: Salva o status inicial (todas false) no DB
+  Future<void> _uploadInitialQuestStatus() async {
+    if (currentUserId == null) return;
+
+    // Cria um mapa: {'boss1': false, 'boss2': false}
+    final Map<String, bool> initialStatus = {
+      for (var quest in quests) quest.id: false
+    };
+
+    try {
+      await _dbRef.child('users/$currentUserId/questStatus').set(initialStatus);
+    } catch (e) {
+      if (kDebugMode) {
+        print("Erro ao salvar status inicial das missões: $e");
+      }
+    }
+  }
+
+  // Salva o progresso de UMA missão (esta função está correta)
+  Future<void> _saveQuestStatus(String questId, bool isCompleted) async {
+    if (currentUserId == null) return;
+    try {
+      await _dbRef
+          .child('users/$currentUserId/questStatus')
+          .update({questId: isCompleted});
+    } catch (e) {
+      if (kDebugMode) {
+        print("Erro ao salvar status da missão: $e");
+      }
+    }
+  }
+
+  // =================================================================
+  // O RESTO DO SEU ARQUIVO (HERÓIS, OURO, INVENTÁRIO)
+  // (Nenhuma mudança necessária aqui)
+  // =================================================================
 
   Future<void> loadHeroes() async {
     if (currentUserId == null) return;
@@ -256,23 +318,10 @@ class GameState with ChangeNotifier {
     }
   }
 
-  Future<void> _saveQuestStatus(String questId, bool isCompleted) async {
-    if (currentUserId == null) return;
-    try {
-      await _dbRef
-          .child('users/$currentUserId/questStatus')
-          .update({questId: isCompleted});
-    } catch (e) {
-      if (kDebugMode) {
-        print("Erro ao salvar status da missão: $e");
-      }
-    }
-  }
-
   void completeQuest(String questId) {
     final quest = quests.firstWhere((q) => q.id == questId);
     quest.isCompleted = true;
-    _saveQuestStatus(questId, true);
+    _saveQuestStatus(questId, true); // Salva o progresso no Firebase
     notifyListeners();
   }
 

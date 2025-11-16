@@ -14,4 +14,16 @@ class Quest {
     required this.boss,
     this.isCompleted = false,
   });
+
+  factory Quest.fromJson(Map<String, dynamic> json) {
+    return Quest(
+      id: json['id'] ?? '',
+      title: json['title'] ?? 'Missão',
+      description: json['description'] ?? '',
+      boss: EnemyCharacter.fromJson(
+        Map<String, dynamic>.from(json['boss'] ?? {}),
+      ),
+      isCompleted: json['isCompleted'] ?? false,
+    );
+  }
 }

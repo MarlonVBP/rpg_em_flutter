@@ -150,4 +150,17 @@ class EnemyCharacter extends GameCharacter {
       ..attack = source.attack
       ..defense = source.defense;
   }
+
+  factory EnemyCharacter.fromJson(Map<String, dynamic> json) {
+    return EnemyCharacter(
+      name: json['name'] ?? 'Inimigo',
+      texturePath: json['texturePath'] ?? 'images/placeholder.png',
+      hp: json['hp'] ?? 200,
+      attack: json['attack'] ?? 15,
+      defense: json['defense'] ?? 3,
+      xpReward: json['xpReward'] ?? 50,
+      goldReward: json['goldReward'] ?? 10,
+      lootTable: [],
+    );
+  }
 }
