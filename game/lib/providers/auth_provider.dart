@@ -1,10 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:teste/models/user_model.dart';
-import 'package:firebase_auth/firebase_auth.dart'as fba; 
+import 'package:firebase_auth/firebase_auth.dart' as fba;
 
 class AuthProvider with ChangeNotifier {
-  final fba.FirebaseAuth _auth =
-      fba.FirebaseAuth.instance;
+  final fba.FirebaseAuth _auth = fba.FirebaseAuth.instance;
   User? _currentUser;
 
   User? get currentUser => _currentUser;
@@ -33,11 +32,11 @@ class AuthProvider with ChangeNotifier {
       return true;
     } on fba.FirebaseAuthException catch (e) {
       print('Falha no login: ${e.message}');
-      
+
       return false;
     } catch (e) {
       print('Erro desconhecido no login: $e');
-      
+
       return false;
     }
   }
@@ -45,19 +44,21 @@ class AuthProvider with ChangeNotifier {
   Future<bool> signup(String email, String password) async {
     try {
       print('Tentando cadastro real para: $email');
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      print('Cadastro real bem-sucedido para: $email');
 
+      await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+
+      print('Cadastro real bem-sucedido para: $email');
       return true;
     } on fba.FirebaseAuthException catch (e) {
       print('Falha no cadastro: ${e.message}');
-      
-      return false;
+      print(e.message);
     } catch (e) {
       print('Erro desconhecido no cadastro: $e');
-      
+      e.toString();
       return false;
     }
+    return false;
   }
 
   Future<void> logout() async {
