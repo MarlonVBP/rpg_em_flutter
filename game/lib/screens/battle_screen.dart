@@ -101,7 +101,7 @@ class _BattleScreenState extends State<BattleScreen> {
         id: 'attack',
         name: 'Atacar',
         description: 'Causa ${hero.attack} de dano físico.',
-        imagePath: 'images/small_sword.png', // Imagem atualizada
+        imagePath: 'images/attack.png', // Imagem atualizada
         type: CardActionType.attack,
       ),
     ));
@@ -112,7 +112,7 @@ class _BattleScreenState extends State<BattleScreen> {
         id: 'fireball',
         name: 'Bola de Fogo',
         description: 'Causa ${hero.attack * 3} de dano mágico.',
-        imagePath: 'images/placeholder.png', // TODO: Usar imagem de fogo
+        imagePath: 'images/fireboll.png', // TODO: Usar imagem de fogo
         type: CardActionType.magic,
         manaCost: 20,
       ),
