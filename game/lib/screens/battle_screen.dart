@@ -411,6 +411,33 @@ class _BattleScreenState extends State<BattleScreen> {
                                       _draggedCardIndex!, details.data);
                               },
                             ),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "VS",
+                                  style: TextStyle(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.w900,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.red.withOpacity(0.3),
+                                        offset: const Offset(2, 2),
+                                        blurRadius: 4,
+                                      ),
+                                      Shadow(
+                                        color: Colors.orangeAccent
+                                            .withOpacity(0.3),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 0),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                             DragTarget<BattleCard>(
                               builder: (context, candidateData, rejectedData) {
                                 final hovering = candidateData.isNotEmpty;
@@ -673,7 +700,7 @@ class _BattleScreenState extends State<BattleScreen> {
               const SizedBox(height: 5),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(4.0),
+                padding: const EdgeInsets.all(12.0),
                 child: Image.asset(card.imagePath,
                     fit: BoxFit.contain,
                     errorBuilder: (c, e, s) =>
@@ -721,10 +748,17 @@ class _BattleScreenState extends State<BattleScreen> {
       data: card,
       feedback: Transform.scale(
           scale: 1.1,
-          child: Material(color: Colors.transparent, child: cardContent)),
+          child: Material(
+            color: Colors.transparent,
+            child: SizedBox(
+              height: 150,
+              child: cardContent,
+            ),
+          )),
       childWhenDragging: Opacity(opacity: 0.0, child: cardContent),
       onDragStarted: () => setState(() => _draggedCardIndex = indexInHand),
       onDraggableCanceled: (_, __) => setState(() => _draggedCardIndex = null),
+      onDragCompleted: () => setState(() => _draggedCardIndex = null),
       child: cardContent,
     );
   }
@@ -736,8 +770,8 @@ class _BattleScreenState extends State<BattleScreen> {
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 100,
-          height: 100,
+          width: 150,
+          height: 150,
           decoration: BoxDecoration(
             shape: isHero ? BoxShape.rectangle : BoxShape.circle,
             borderRadius: isHero ? BorderRadius.circular(12) : null,

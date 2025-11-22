@@ -16,18 +16,14 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   final List<String> _classes = ['Guerreiro', 'Mago', 'Ladino'];
 
   final List<String> _avatarImages = [
-    'images/warrior.png',
+    'images/archer.png',
+    'images/curandeira.png',
+    'images/druida.png',
+    'images/feiticeira.png',
     'images/mage.png',
-    'images/ladino.png',
-    'images/monk.png',
-    'images/magician_woman.png',
-    'images/athena.png',
-    'images/wizard_square.png',
-    'images/witch_woman.png',
-    'images/wizard_kiwi.png',
-    'images/knight_woman-tiny.png',
-    'images/knight_woman.png',
-    'images/knight_hourse.png',
+    'images/monge.png',
+    'images/templario.png',
+    'images/xama.png',
   ];
   String? _selectedImagePath;
 
@@ -97,7 +93,6 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
                     const Text('Escolha sua Classe:',
                         style: TextStyle(color: Colors.white, fontSize: 16)),
                     const SizedBox(height: 10),
@@ -120,9 +115,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       }).toList(),
                     ),
                     const SizedBox(height: 20),
-
                     _buildAvatarSelector(),
-
                     const SizedBox(height: 30),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.add_circle_outline),
@@ -173,7 +166,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: isSelected ? Colors.deepPurple : Colors.transparent,
+                      color:
+                          isSelected ? Colors.deepPurple : Colors.transparent,
                       width: 3,
                     ),
                     borderRadius: BorderRadius.circular(40),

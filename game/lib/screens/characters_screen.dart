@@ -42,14 +42,10 @@ class CharactersScreen extends StatelessWidget {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final int crossAxisCount =
-                    (constraints.maxWidth > wideLayoutBreakpoint)
-                        ? 5
-                        : 2;
-                
+                    (constraints.maxWidth > wideLayoutBreakpoint) ? 5 : 2;
+
                 final double childAspectRatio =
-                    (constraints.maxWidth > wideLayoutBreakpoint)
-                        ? 0.75
-                        : 0.8;
+                    (constraints.maxWidth > wideLayoutBreakpoint) ? 0.75 : 0.8;
 
                 return GridView.builder(
                   padding: const EdgeInsets.all(16.0),
@@ -103,12 +99,15 @@ class CharactersScreen extends StatelessWidget {
               flex: 3,
               child: Container(
                 color: Colors.grey[800],
-                child: Image.asset(
-                  hero.texturePath, 
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.image_not_supported, color: Colors.grey[600], size: 50);
-                  },
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Image.asset(
+                    hero.texturePath,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.image_not_supported,
+                          color: Colors.grey[600], size: 50);
+                    },
+                  ),
                 ),
               ),
             ),

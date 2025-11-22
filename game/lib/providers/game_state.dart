@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:teste/data/local/all_game_items.dart';
+import 'package:teste/data/local/all_game_quests.dart';
 import 'package:teste/data/local/default_heroes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:teste/data/models/hero_character_model.dart';
@@ -25,8 +26,14 @@ class GameState with ChangeNotifier {
   String? get currentUserId => _currentUser?.uid;
 
   GameState(this._currentUser) {
+    quests = allGameQuests.map((q) {
+      q.isCompleted = false;
+      return q;
+    }).toList();
+
     if (currentUserId != null) {
       _loadGameData();
+      loadHeroes();
     } else {
       availableHeroes = List.from(defaultHeroes);
     }
@@ -52,7 +59,7 @@ class GameState with ChangeNotifier {
       await _dbRef.child('users/$currentUserId/questStatus').set(initialStatus);
     } catch (e) {
       if (kDebugMode) {
-        print("Erro ao salvar status inicial das missões: $e");
+        print(e);
       }
     }
   }
@@ -60,7 +67,7 @@ class GameState with ChangeNotifier {
   void _loadGameData() {
     if (currentUserId == null) return;
 
-    final goldSub =
+    final userSub =
         _dbRef.child('users/$currentUserId').onValue.listen((event) {
       final data = event.snapshot.value;
 
@@ -80,7 +87,7 @@ class GameState with ChangeNotifier {
               playerInventory.add(item);
             } catch (e) {
               if (kDebugMode) {
-                print("Item $itemName não encontrado na lista mestre.");
+                print(e);
               }
             }
           }
@@ -89,31 +96,28 @@ class GameState with ChangeNotifier {
       notifyListeners();
     }, onError: (error) {
       if (kDebugMode) {
-        print("Erro ao carregar dados do jogo: $error");
+        print(error);
       }
     });
+    _subscriptions.add(userSub);
 
-    _dbRef.child('users/$currentUserId/questStatus').onValue.listen((event) {
-      _subscriptions.add(goldSub);
+    final questSub = _dbRef
+        .child('users/$currentUserId/questStatus')
+        .onValue
+        .listen((event) {
+      final data = event.snapshot.value;
 
-      final questSub = _dbRef
-          .child('users/$currentUserId/questStatus')
-          .onValue
-          .listen((event) {
-        final data = event.snapshot.value;
-
-        if (data != null && data is Map) {
-          final questStatus = Map<dynamic, dynamic>.from(data);
-          for (final quest in quests) {
-            quest.isCompleted = questStatus[quest.id] as bool? ?? false;
-          }
-        } else {
-          _uploadInitialQuestStatus();
+      if (data != null && data is Map) {
+        final questStatus = Map<dynamic, dynamic>.from(data);
+        for (final quest in quests) {
+          quest.isCompleted = questStatus[quest.id] as bool? ?? false;
         }
-        notifyListeners();
-      });
-      _subscriptions.add(questSub);
+      } else {
+        _uploadInitialQuestStatus();
+      }
+      notifyListeners();
     });
+    _subscriptions.add(questSub);
   }
 
   Future<void> _saveQuestStatus(String questId, bool isCompleted) async {
@@ -124,7 +128,7 @@ class GameState with ChangeNotifier {
           .update({questId: isCompleted});
     } catch (e) {
       if (kDebugMode) {
-        print("Erro ao salvar status da missão: $e");
+        print(e);
       }
     }
   }
@@ -144,7 +148,6 @@ class GameState with ChangeNotifier {
           }).toList();
         } else {
           availableHeroes = List.from(defaultHeroes);
-
           _saveHeroesToFirebase();
         }
 
@@ -163,9 +166,8 @@ class GameState with ChangeNotifier {
       _subscriptions.add(heroesSub);
     } catch (e) {
       if (kDebugMode) {
-        print("Erro ao carregar heróis do Firebase: $e");
+        print(e);
       }
-
       availableHeroes = List.from(defaultHeroes);
       notifyListeners();
     }
@@ -180,7 +182,7 @@ class GameState with ChangeNotifier {
       await _dbRef.child('users/$currentUserId/heroes').set(heroesMap);
     } catch (e) {
       if (kDebugMode) {
-        print("Erro ao salvar heróis no Firebase: $e");
+        print(e);
       }
     }
   }
@@ -193,7 +195,7 @@ class GameState with ChangeNotifier {
           .update(hero.toJson());
     } catch (e) {
       if (kDebugMode) {
-        print("Erro ao atualizar herói no Firebase: $e");
+        print(e);
       }
     }
   }
@@ -206,7 +208,7 @@ class GameState with ChangeNotifier {
           .set(hero.toJson());
     } catch (e) {
       if (kDebugMode) {
-        print("Erro ao adicionar herói no Firebase: $e");
+        print(e);
       }
     }
   }
@@ -218,7 +220,7 @@ class GameState with ChangeNotifier {
       await _dbRef.child('users/$currentUserId/playerInventory').set(itemNames);
     } catch (e) {
       if (kDebugMode) {
-        print("Erro ao salvar inventário no Firebase: $e");
+        print(e);
       }
     }
   }
@@ -229,7 +231,7 @@ class GameState with ChangeNotifier {
       await _dbRef.child('users/$currentUserId/playerGold').set(playerGold);
     } catch (e) {
       if (kDebugMode) {
-        print("Erro ao salvar ouro no Firebase: $e");
+        print(e);
       }
     }
   }
