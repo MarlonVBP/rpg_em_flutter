@@ -39,7 +39,6 @@ class _BattleScreenState extends State<BattleScreen> {
   List<BattleCard> hand = [];
   List<BattleCard> discardPile = [];
   final int maxHandSize = 5;
-  // REMOVIDO: final GlobalKey<AnimatedListState> _handListKey... (Não usamos mais)
 
   // --- ESTADOS ---
   List<BattleLogEntry> battleLog = [];
@@ -60,8 +59,7 @@ class _BattleScreenState extends State<BattleScreen> {
           ),
     );
     enemy = character.EnemyCharacter.clone(widget.enemy);
-    backgroundPath =
-        gameState.selectedScenario ?? 'images/battle_city.png';
+    backgroundPath = gameState.selectedScenario ?? 'images/battle_city.png';
 
     _applyItemBonuses();
     _buildInitialDeck();
@@ -156,7 +154,6 @@ class _BattleScreenState extends State<BattleScreen> {
     _drawHand();
   }
 
-  // ATUALIZADO: Lógica simplificada para preencher os slots visualmente
   Future<void> _drawHand() async {
     int cardsToDraw = maxHandSize - hand.length;
     if (cardsToDraw <= 0) return;
@@ -172,11 +169,10 @@ class _BattleScreenState extends State<BattleScreen> {
       }
     }
 
-    // Adiciona uma carta por vez para criar o efeito de preenchimento sequencial
     for (int i = 0; i < cardsToDraw; i++) {
       if (deck.isEmpty) break;
 
-      await Future.delayed(const Duration(milliseconds: 150)); // Delay entre cartas
+      await Future.delayed(const Duration(milliseconds: 150));
       setState(() {
         final card = deck.removeLast();
         hand.add(card);
@@ -217,7 +213,6 @@ class _BattleScreenState extends State<BattleScreen> {
     }
     _playCardEffect(card);
 
-    // Remove a carta e move para o descarte
     setState(() {
       final removedCard = hand.removeAt(indexInHand);
       if (removedCard.type != CardActionType.item) {
@@ -281,9 +276,7 @@ class _BattleScreenState extends State<BattleScreen> {
     });
   }
 
-  // ATUALIZADO: Esvazia a mão sequencialmente para a animação dos slots
   Future<void> _discardHand() async {
-    // Remove do fim para o começo para animação fluida
     while (hand.isNotEmpty) {
       await Future.delayed(const Duration(milliseconds: 100));
       setState(() {
@@ -293,15 +286,14 @@ class _BattleScreenState extends State<BattleScreen> {
   }
 
   void _enemyTurn() {
-    // Descarta instantaneamente para o turno do inimigo
     while (hand.isNotEmpty) {
-       discardPile.add(hand.removeLast());
+      discardPile.add(hand.removeLast());
     }
-    setState(() {}); // Atualiza UI vazia
+    setState(() {});
 
     Future.delayed(const Duration(seconds: 1), () {
       if (!mounted) return;
-      
+
       int damage = max(0, enemy.attack - hero.defense);
 
       setState(() {
@@ -351,7 +343,8 @@ class _BattleScreenState extends State<BattleScreen> {
         hero.xp += enemy.xpReward;
         if (hero.xp >= hero.xpToNextLevel) {
           hero.levelUp();
-          _logAction("Subiu de Nível! Agora é Nível ${hero.level}!", LogEntryType.system);
+          _logAction("Subiu de Nível! Agora é Nível ${hero.level}!",
+              LogEntryType.system);
         } else {
           hero.restoreStats();
         }
@@ -382,10 +375,8 @@ class _BattleScreenState extends State<BattleScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Batalha', 
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
-        ),
+        title: const Text('Batalha',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 2,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -419,23 +410,34 @@ class _BattleScreenState extends State<BattleScreen> {
                             DragTarget<BattleCard>(
                               builder: (context, candidateData, rejectedData) {
                                 final hovering = candidateData.isNotEmpty;
-                                return _buildCharacterDisplay(hero, isHovering: hovering);
+                                return _buildCharacterDisplay(hero,
+                                    isHovering: hovering);
                               },
-                              onWillAcceptWithDetails: (details) => 
-                                  isPlayerTurn && !isProcessingTurn && details.data.type == CardActionType.item,
+                              onWillAcceptWithDetails: (details) =>
+                                  isPlayerTurn &&
+                                  !isProcessingTurn &&
+                                  details.data.type == CardActionType.item,
                               onAcceptWithDetails: (details) {
-                                if (_draggedCardIndex != null) _onCardPlayed(_draggedCardIndex!, details.data);
+                                if (_draggedCardIndex != null)
+                                  _onCardPlayed(
+                                      _draggedCardIndex!, details.data);
                               },
                             ),
                             DragTarget<BattleCard>(
                               builder: (context, candidateData, rejectedData) {
                                 final hovering = candidateData.isNotEmpty;
-                                return _buildCharacterDisplay(enemy, isHovering: hovering);
+                                return _buildCharacterDisplay(enemy,
+                                    isHovering: hovering);
                               },
-                              onWillAcceptWithDetails: (details) => 
-                                  isPlayerTurn && !isProcessingTurn && details.data.type != CardActionType.item && hero.currentMana >= details.data.manaCost,
+                              onWillAcceptWithDetails: (details) =>
+                                  isPlayerTurn &&
+                                  !isProcessingTurn &&
+                                  details.data.type != CardActionType.item &&
+                                  hero.currentMana >= details.data.manaCost,
                               onAcceptWithDetails: (details) {
-                                if (_draggedCardIndex != null) _onCardPlayed(_draggedCardIndex!, details.data);
+                                if (_draggedCardIndex != null)
+                                  _onCardPlayed(
+                                      _draggedCardIndex!, details.data);
                               },
                             ),
                           ],
@@ -447,12 +449,14 @@ class _BattleScreenState extends State<BattleScreen> {
                         right: 0,
                         child: Center(
                           child: Container(
-                            constraints: const BoxConstraints(maxWidth: 400, maxHeight: 120),
+                            constraints: const BoxConstraints(
+                                maxWidth: 400, maxHeight: 120),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: ListView.builder(
                               reverse: true,
                               itemCount: battleLog.length,
-                              itemBuilder: (context, index) => _buildLogEntryWidget(battleLog[index]),
+                              itemBuilder: (context, index) =>
+                                  _buildLogEntryWidget(battleLog[index]),
                             ),
                           ),
                         ),
@@ -461,14 +465,18 @@ class _BattleScreenState extends State<BattleScreen> {
                   ),
                 ),
               ),
-              
-              // --- ÁREA DAS CARTAS (Com Bases Fixas) ---
+
+              // --- ÁREA DAS CARTAS (FIT TO SCREEN + MAX WIDTH) ---
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withOpacity(0.8), Colors.black],
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.8),
+                      Colors.black
+                    ],
                   ),
                 ),
                 padding: const EdgeInsets.only(top: 20, bottom: 20),
@@ -480,15 +488,16 @@ class _BattleScreenState extends State<BattleScreen> {
                     else ...[
                       _buildRerollButton(),
                       const SizedBox(height: 10),
-                      
-                      // NOVO: Row fixa com 5 slots
-                      SizedBox(
-                        height: 180,
-                        child: Center(
+                      Center(
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 650),
+                          height: 150,
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: List.generate(maxHandSize, (index) {
-                              return _buildSlot(index);
+                              // Expanded divide o espaço (até 600px) igualmente
+                              return Expanded(child: _buildSlot(index));
                             }),
                           ),
                         ),
@@ -504,25 +513,20 @@ class _BattleScreenState extends State<BattleScreen> {
     );
   }
 
-  // --- NOVO: Lógica dos Slots/Bases ---
-  
   Widget _buildSlot(int index) {
-    // Verifica se existe uma carta para este índice
     final bool hasCard = index < hand.length;
     final BattleCard? card = hasCard ? hand[index] : null;
 
-    // AnimatedSwitcher faz a transição suave entre a base vazia e a carta
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 6), // Espaçamento fixo
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         transitionBuilder: (Widget child, Animation<double> animation) {
-          // Animação de entrada (Slide de baixo + Scale)
           final offsetAnimation = Tween<Offset>(
             begin: const Offset(0, 0.5),
             end: Offset.zero,
           ).animate(animation);
-          
+
           return SlideTransition(
             position: offsetAnimation,
             child: FadeTransition(
@@ -531,53 +535,52 @@ class _BattleScreenState extends State<BattleScreen> {
             ),
           );
         },
-        // Se tiver carta, mostra a carta. Se não, mostra a base vazia.
-        child: hasCard 
+        child: hasCard
             ? KeyedSubtree(
-                key: ValueKey(card!.id + index.toString()), // Key única para recriar animação
-                child: _buildCardWidget(card, index)
-              )
+                key: ValueKey(card!.id + index.toString()),
+                child: _buildCardWidget(card, index))
             : _buildEmptyBase(),
       ),
     );
   }
 
-  // Visual da "Base" (Slot vazio)
   Widget _buildEmptyBase() {
-    return Container(
-      width: 110,
-      height: 160,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05), // Fundo translúcido
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1), // Borda sutil
-          width: 2,
-          style: BorderStyle.solid,
+    return AspectRatio(
+      aspectRatio: 0.7,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+            width: 2,
+            style: BorderStyle.solid,
+          ),
         ),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.add, 
-          color: Colors.white.withOpacity(0.1), 
-          size: 30
+        child: Center(
+          child:
+              Icon(Icons.add, color: Colors.white.withOpacity(0.1), size: 20),
         ),
       ),
     );
   }
 
-  // --- WIDGETS AUXILIARES ---
-  
-  // (Os widgets abaixo permanecem praticamente iguais, apenas removi 
-  // a lógica de animação que agora está no AnimatedSwitcher)
-
   Widget _buildLogEntryWidget(BattleLogEntry entry) {
     IconData iconData;
     Color color;
     switch (entry.type) {
-      case LogEntryType.damage: iconData = Icons.flash_on; color = Colors.redAccent; break;
-      case LogEntryType.heal: iconData = Icons.favorite; color = Colors.greenAccent; break;
-      case LogEntryType.system: iconData = Icons.info; color = Colors.blueAccent; break;
+      case LogEntryType.damage:
+        iconData = Icons.flash_on;
+        color = Colors.redAccent;
+        break;
+      case LogEntryType.heal:
+        iconData = Icons.favorite;
+        color = Colors.greenAccent;
+        break;
+      case LogEntryType.system:
+        iconData = Icons.info;
+        color = Colors.blueAccent;
+        break;
     }
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 2),
@@ -594,7 +597,10 @@ class _BattleScreenState extends State<BattleScreen> {
           Flexible(
             child: Text(
               entry.message,
-              style: const TextStyle(color: Colors.white, fontSize: 12, shadows: [Shadow(blurRadius: 1)]),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  shadows: [Shadow(blurRadius: 1)]),
             ),
           ),
         ],
@@ -634,60 +640,90 @@ class _BattleScreenState extends State<BattleScreen> {
   }
 
   Widget _buildCardWidget(BattleCard card, int indexInHand) {
-    bool canPlay = isPlayerTurn && !isProcessingTurn && (hero.currentMana >= card.manaCost);
-    
-    Widget cardContent = Container(
-      width: 110,
-      height: 160,
-      // Removido Margin aqui pois já está no container do slot
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: canPlay ? (card.type == CardActionType.item ? Colors.green : Colors.amber) : Colors.grey.shade700,
-          width: canPlay ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            blurRadius: 8,
-            offset: const Offset(2, 4),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (card.manaCost > 0)
-            Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.blue[900],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-              ),
-              child: Text("${card.manaCost}", style: const TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+    bool canPlay = isPlayerTurn &&
+        !isProcessingTurn &&
+        (hero.currentMana >= card.manaCost);
+
+    Widget cardContent = AspectRatio(
+      aspectRatio: 0.7,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: canPlay
+                ? (card.type == CardActionType.item
+                    ? Colors.green
+                    : Colors.amber)
+                : Colors.grey.shade700,
+            width: canPlay ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 8,
+              offset: const Offset(2, 4),
             )
-          else 
-            const SizedBox(height: 10),
-          Expanded(
-            child: Padding(
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (card.manaCost > 0)
+              Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.blue[900],
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(6)),
+                ),
+                child: Text("${card.manaCost}",
+                    style: const TextStyle(
+                        color: Colors.cyanAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10)),
+              )
+            else
+              const SizedBox(height: 5),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Image.asset(card.imagePath,
+                    fit: BoxFit.contain,
+                    errorBuilder: (c, e, s) =>
+                        const Icon(Icons.broken_image, color: Colors.white24)),
+              ),
+            ),
+            Padding(
               padding: const EdgeInsets.all(4.0),
-              child: Image.asset(card.imagePath, fit: BoxFit.contain,
-                errorBuilder: (c,e,s) => const Icon(Icons.broken_image, color: Colors.white24)),
+              child: Column(
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(card.name,
+                        maxLines: 1,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11),
+                        textAlign: TextAlign.center),
+                  ),
+                  const SizedBox(height: 2),
+                  LayoutBuilder(builder: (context, constraints) {
+                    if (constraints.maxHeight < 20)
+                      return const SizedBox.shrink();
+                    return Text(card.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.grey, fontSize: 8),
+                        textAlign: TextAlign.center);
+                  }),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(6.0),
-            child: Column(
-              children: [
-                Text(card.name, maxLines: 1, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center),
-                const SizedBox(height: 2),
-                Text(card.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.grey, fontSize: 9), textAlign: TextAlign.center),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 
@@ -697,38 +733,53 @@ class _BattleScreenState extends State<BattleScreen> {
 
     return Draggable<BattleCard>(
       data: card,
-      feedback: Transform.scale(scale: 1.1, child: Material(color: Colors.transparent, child: cardContent)),
-      childWhenDragging: Opacity(opacity: 0.0, child: cardContent), // Fica transparente para mostrar a base por baixo
+      feedback: SizedBox(
+          width: 110,
+          height: 160,
+          child: Material(color: Colors.transparent, child: cardContent)),
+      childWhenDragging: Opacity(opacity: 0.0, child: cardContent),
       onDragStarted: () => setState(() => _draggedCardIndex = indexInHand),
       onDraggableCanceled: (_, __) => setState(() => _draggedCardIndex = null),
       child: cardContent,
     );
   }
 
-  Widget _buildCharacterDisplay(character.GameCharacter char, {bool isHovering = false}) {
+  Widget _buildCharacterDisplay(character.GameCharacter char,
+      {bool isHovering = false}) {
     bool isHero = char is character.HeroCharacter;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 100, 
+          width: 100,
           height: 100,
           decoration: BoxDecoration(
             shape: isHero ? BoxShape.rectangle : BoxShape.circle,
             borderRadius: isHero ? BorderRadius.circular(12) : null,
-            image: DecorationImage(image: AssetImage(char.texturePath), fit: BoxFit.cover),
-            border: Border.all(color: isHovering ? Colors.white : Colors.transparent, width: 3),
+            image: DecorationImage(
+                image: AssetImage(char.texturePath), fit: BoxFit.cover),
+            border: Border.all(
+                color: isHovering ? Colors.white : Colors.transparent,
+                width: 3),
             boxShadow: [
-              if (isHovering) BoxShadow(color: isHero ? Colors.green : Colors.red, blurRadius: 20),
-              const BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 5))
+              if (isHovering)
+                BoxShadow(
+                    color: isHero ? Colors.green : Colors.red, blurRadius: 20),
+              const BoxShadow(
+                  color: Colors.black45, blurRadius: 10, offset: Offset(0, 5))
             ],
           ),
         ),
         const SizedBox(height: 8),
-        Text(char.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, shadows: [Shadow(color: Colors.black, blurRadius: 4)])),
+        Text(char.name,
+            style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                shadows: [Shadow(color: Colors.black, blurRadius: 4)])),
         const SizedBox(height: 4),
-        _buildStatBar(char.currentHp, char.maxHp, _getHpColor(char.currentHp, char.maxHp)),
+        _buildStatBar(char.currentHp, char.maxHp,
+            _getHpColor(char.currentHp, char.maxHp)),
         if (isHero) ...[
           const SizedBox(height: 2),
           _buildStatBar(char.currentMana, char.maxMana, Colors.blueAccent),
@@ -751,7 +802,8 @@ class _BattleScreenState extends State<BattleScreen> {
         child: FractionallySizedBox(
           widthFactor: max(0, min(1, current / maxVal)),
           child: Container(
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(
+                color: color, borderRadius: BorderRadius.circular(4)),
           ),
         ),
       ),
