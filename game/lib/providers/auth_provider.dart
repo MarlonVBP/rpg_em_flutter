@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:teste/models/user_model.dart';
+import 'package:teste/data/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fba;
 
 class AuthProvider with ChangeNotifier {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:teste/models/item_model.dart';
+import 'package:teste/data/models/item_model.dart';
 import 'package:teste/providers/game_state.dart';
 import 'package:provider/provider.dart';
 

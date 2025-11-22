@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:teste/models/character_model.dart';
+import 'package:teste/data/models/hero_character_model.dart';
 import 'package:teste/providers/game_state.dart';
 
 class CreateCharacterScreen extends StatefulWidget {

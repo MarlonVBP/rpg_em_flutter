@@ -1,57 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:teste/models/character_model.dart';
+import 'package:teste/data/local/all_game_items.dart';
+import 'package:teste/data/local/default_heroes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:teste/models/item_model.dart';
-import 'package:teste/models/quest_model.dart';
+import 'package:teste/data/models/hero_character_model.dart';
+import 'package:teste/data/models/item_model.dart';
+import 'package:teste/data/models/quest_model.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:teste/models/user_model.dart';
-
-// Lista de Heróis Padrão
-final List<HeroCharacter> defaultHeroes = [
-  HeroCharacter(
-    name: 'Guerreiro velho',
-    texturePath: 'images/warrior.png',
-    heroClass: 'Guerreiro',
-  ),
-  HeroCharacter(
-      name: 'Mago ancião', texturePath: 'images/mage.png', heroClass: 'Mago'),
-  HeroCharacter(
-      name: 'Vigia ancestral',
-      texturePath: 'images/ladino.png',
-      heroClass: 'Ladino'),
-];
-
-// Lista de Itens Padrão
-const List<GameItem> allGameItems = [
-  GameItem(
-      name: 'Poção de Cura',
-      description: 'Restaura 50 HP',
-      type: ItemType.potion,
-      imagePath: 'images/health_potion.png',
-      healAmount: 50,
-      price: 10),
-  GameItem(
-      name: 'Espada Curta',
-      description: '+5 de Ataque',
-      type: ItemType.sword,
-      imagePath: 'images/small_sword.png',
-      attackBonus: 5,
-      price: 100),
-  GameItem(
-      name: 'Armadura leve',
-      description: '+5 de Defesa',
-      type: ItemType.armor,
-      imagePath: 'images/armor_leather.png',
-      defenseBonus: 5,
-      price: 80),
-  GameItem(
-      name: 'Cajado Místico',
-      description: '+10 Ataque Mágico',
-      type: ItemType.staff,
-      imagePath: 'images/magic_staff.png',
-      price: 150),
-];
+import 'package:teste/data/models/user_model.dart';
 
 class GameState with ChangeNotifier {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
@@ -60,73 +15,24 @@ class GameState with ChangeNotifier {
   HeroCharacter? selectedHero;
   String? selectedScenario;
   List<GameItem> playerInventory = [];
-  List<Quest> quests = []; // Lista de missões (começa vazia)
+  List<Quest> quests = [];
   int playerGold = 0;
   List<HeroCharacter> availableHeroes = [];
 
   String? get currentUserId => _currentUser?.uid;
 
   GameState(this._currentUser) {
-    // 1. Carrega as missões pré-definidas localmente
-    _initializeQuests();
-
-    // 2. Se o usuário estiver logado, carrega/sincroniza seus dados
     if (currentUserId != null) {
       loadHeroes();
       _loadGameData();
     } else {
-      // Se não houver usuário, apenas carrega os heróis padrão
       availableHeroes = List.from(defaultHeroes);
     }
   }
 
-  // =================================================================
-  // CARREGA AS MISSÕES LOCALMENTE (COMO VOCÊ PEDIU)
-  // =================================================================
-  void _initializeQuests() {
-    // Define os chefes localmente
-    final bosses = [
-      EnemyCharacter(
-          name: 'Círculo Vermelho da Fúria',
-          texturePath: 'images/blue_texture.png',
-          hp: 300,
-          attack: 20,
-          xpReward: 100,
-          goldReward: 50),
-      EnemyCharacter(
-          name: 'Círculo Sombrio do Abismo',
-          texturePath: 'images/red_texture.png',
-          hp: 500,
-          attack: 12,
-          defense: 8,
-          xpReward: 250,
-          goldReward: 120),
-    ];
-
-    // Define as missões localmente
-    quests = [
-      Quest(
-          id: 'boss1',
-          title: 'A Ameaça Vermelha',
-          description: 'Derrote o Círculo da Fúria que aterroriza a cidade.',
-          boss: bosses[0]),
-      Quest(
-          id: 'boss2',
-          title: 'Escuridão Profunda',
-          description: 'Enfrente o Círculo Sombrio que emerge das ruínas.',
-          boss: bosses[1]),
-    ];
-    // Não é preciso notificar (notifyListeners) aqui,
-    // pois isso acontece no construtor.
-  }
-
-  // =================================================================
-  // CARREGA OS DADOS DO JOGADOR E SINCRONIZA AS MISSÕES
-  // =================================================================
   void _loadGameData() {
     if (currentUserId == null) return;
 
-    // Ouve os dados do usuário (ouro e inventário)
     _dbRef.child('users/$currentUserId').onValue.listen((event) {
       final data = event.snapshot.value;
 
@@ -159,30 +65,24 @@ class GameState with ChangeNotifier {
       }
     });
 
-    // Ouve SEPARADAMENTE o progresso das missões
     _dbRef.child('users/$currentUserId/questStatus').onValue.listen((event) {
       final data = event.snapshot.value;
 
       if (data != null && data is Map) {
-        // Se os dados existem, carrega o progresso
         final questStatus = Map<dynamic, dynamic>.from(data);
         for (final quest in quests) {
           quest.isCompleted = questStatus[quest.id] as bool? ?? false;
         }
       } else {
-        // Se os dados NÃO existem (ex: 1º login),
-        // salva o progresso inicial (todas false) no banco
         _uploadInitialQuestStatus();
       }
       notifyListeners();
     });
   }
 
-  // NOVO: Salva o status inicial (todas false) no DB
   Future<void> _uploadInitialQuestStatus() async {
     if (currentUserId == null) return;
 
-    // Cria um mapa: {'boss1': false, 'boss2': false}
     final Map<String, bool> initialStatus = {
       for (var quest in quests) quest.id: false
     };
@@ -196,7 +96,6 @@ class GameState with ChangeNotifier {
     }
   }
 
-  // Salva o progresso de UMA missão (esta função está correta)
   Future<void> _saveQuestStatus(String questId, bool isCompleted) async {
     if (currentUserId == null) return;
     try {
@@ -209,11 +108,6 @@ class GameState with ChangeNotifier {
       }
     }
   }
-
-  // =================================================================
-  // O RESTO DO SEU ARQUIVO (HERÓIS, OURO, INVENTÁRIO)
-  // (Nenhuma mudança necessária aqui)
-  // =================================================================
 
   Future<void> loadHeroes() async {
     if (currentUserId == null) return;
@@ -321,7 +215,7 @@ class GameState with ChangeNotifier {
   void completeQuest(String questId) {
     final quest = quests.firstWhere((q) => q.id == questId);
     quest.isCompleted = true;
-    _saveQuestStatus(questId, true); // Salva o progresso no Firebase
+    _saveQuestStatus(questId, true);
     notifyListeners();
   }
 

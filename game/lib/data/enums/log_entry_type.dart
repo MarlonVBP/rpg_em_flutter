@@ -1,0 +1,1 @@
+enum LogEntryType { damage, heal, system }

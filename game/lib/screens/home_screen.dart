@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:teste/providers/game_state.dart';
-import 'package:teste/screens/characters_screen.dart' as characters;
-import 'package:teste/screens/items_screen.dart' as items;
-import 'package:teste/screens/quests_screen.dart' as quests;
-import 'package:teste/screens/cities_screen.dart' as cities;
 import 'package:provider/provider.dart';
 import 'package:teste/providers/auth_provider.dart';
+import 'package:teste/screens/characters_screen.dart';
+import 'package:teste/screens/cities_screen.dart';
+import 'package:teste/screens/items_screen.dart';
+import 'package:teste/screens/quests_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -32,93 +32,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWideLayout(
-    BuildContext context,
-    GameState? gameState,
-    AuthProvider authProvider,
-  ) {
-    return Stack(
-      children: [
-        Positioned(
-          left: 48.0,
-          top: 48.0,
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 300),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _buildNavigationButton(
-                  context: context,
-                  icon: Icons.person_search,
-                  label: 'Personagens',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => characters.CharactersScreen(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildNavigationButton(
-                  context: context,
-                  icon: Icons.shield,
-                  label: 'Itens',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const items.ItemsScreen()),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildNavigationButton(
-                  context: context,
-                  icon: Icons.landscape,
-                  label: 'Cenários',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const cities.CitiesScreen(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildNavigationButton(
-                  context: context,
-                  icon: Icons.gavel,
-                  label: 'Missões',
-                  isPrimary: true,
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => quests.QuestsScreen(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildNavigationButton(
-                  context: context,
-                  icon: Icons.exit_to_app,
-                  label: 'Sair do Jogo',
-                  onPressed: () {
-                    authProvider.logout();
-                  },
-                  isPrimary: false,
-                ),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
-          right: 48.0,
-          top: 48.0,
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: _buildStatusCard(context, gameState),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildNarrowLayout(
     BuildContext context,
@@ -141,7 +54,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => characters.CharactersScreen(),
+                  builder: (context) => CharactersScreen(),
                 ),
               ),
             ),
@@ -153,7 +66,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const items.ItemsScreen()),
+                    builder: (context) => const ItemsScreen()),
               ),
             ),
             const SizedBox(height: 16),
@@ -164,7 +77,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const cities.CitiesScreen(),
+                  builder: (context) => const CitiesScreen(),
                 ),
               ),
             ),
@@ -177,7 +90,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => quests.QuestsScreen(),
+                  builder: (context) => QuestsScreen(),
                 ),
               ),
             ),

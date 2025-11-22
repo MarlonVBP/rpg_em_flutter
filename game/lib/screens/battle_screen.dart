@@ -1,15 +1,16 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:teste/models/character_model.dart' as character;
-import 'package:teste/models/item_model.dart';
+import 'package:teste/data/enums/card_action_type.dart';
+import 'package:teste/data/enums/log_entry_type.dart';
+import 'package:teste/data/models/enemy_character_model.dart';
+import 'package:teste/data/models/game_character_model.dart';
+import 'package:teste/data/models/hero_character_model.dart';
+import 'package:teste/data/models/item_model.dart';
 import 'package:teste/providers/game_state.dart';
 import 'package:provider/provider.dart';
-import 'package:teste/models/battle_card_model.dart';
+import 'package:teste/data/models/battle_card_model.dart';
 
-// Enum para os tipos de log
-enum LogEntryType { damage, heal, system }
 
-// Classe para estruturar o log
 class BattleLogEntry {
   final String message;
   final LogEntryType type;
@@ -17,7 +18,7 @@ class BattleLogEntry {
 }
 
 class BattleScreen extends StatefulWidget {
-  final character.EnemyCharacter enemy;
+  final EnemyCharacter enemy;
   final VoidCallback onVictory;
 
   const BattleScreen({super.key, required this.enemy, required this.onVictory});
@@ -28,20 +29,17 @@ class BattleScreen extends StatefulWidget {
 
 class _BattleScreenState extends State<BattleScreen> {
   late GameState gameState;
-  late character.HeroCharacter hero;
-  late character.EnemyCharacter enemy;
+  late HeroCharacter hero;
+  late EnemyCharacter enemy;
   late String backgroundPath;
   bool isPlayerTurn = true;
   bool isProcessingTurn = false;
 
-  // --- Variáveis do Card Game ---
   List<BattleCard> deck = [];
   List<BattleCard> hand = [];
   List<BattleCard> discardPile = [];
   final int maxHandSize = 5;
-  // REMOVIDO: final GlobalKey<AnimatedListState> _handListKey... (Não usamos mais)
 
-  // --- ESTADOS ---
   List<BattleLogEntry> battleLog = [];
   int rerollPoints = 5;
   int? _draggedCardIndex;
@@ -51,15 +49,15 @@ class _BattleScreenState extends State<BattleScreen> {
     super.initState();
     gameState = Provider.of<GameState>(context, listen: false);
 
-    hero = character.HeroCharacter.clone(
+    hero = HeroCharacter.clone(
       gameState.selectedHero ??
-          character.HeroCharacter(
+          HeroCharacter(
             name: 'Aventureiro',
             texturePath: 'images/blue_texture.png',
             heroClass: 'Guerreiro',
           ),
     );
-    enemy = character.EnemyCharacter.clone(widget.enemy);
+    enemy = EnemyCharacter.clone(widget.enemy);
     backgroundPath =
         gameState.selectedScenario ?? 'images/battle_city.png';
 
@@ -94,7 +92,6 @@ class _BattleScreenState extends State<BattleScreen> {
     discardPile = [];
     hand = [];
 
-    // Cartas de Ataque
     deck.addAll(List.generate(
       5,
       (index) => BattleCard(
@@ -106,7 +103,6 @@ class _BattleScreenState extends State<BattleScreen> {
       ),
     ));
 
-    // Cartas de Magia
     deck.addAll(List.generate(
       2,
       (index) => BattleCard(
@@ -119,7 +115,6 @@ class _BattleScreenState extends State<BattleScreen> {
       ),
     ));
 
-    // Cartas de Item (Poções)
     for (var item in gameState.playerInventory) {
       if (item.type == ItemType.potion) {
         deck.add(BattleCard(
@@ -144,8 +139,6 @@ class _BattleScreenState extends State<BattleScreen> {
     });
   }
 
-  // --- LÓGICA PRINCIPAL DO JOGO DE CARTAS ---
-
   void _startPlayerTurn() {
     setState(() {
       isPlayerTurn = true;
@@ -156,7 +149,6 @@ class _BattleScreenState extends State<BattleScreen> {
     _drawHand();
   }
 
-  // ATUALIZADO: Lógica simplificada para preencher os slots visualmente
   Future<void> _drawHand() async {
     int cardsToDraw = maxHandSize - hand.length;
     if (cardsToDraw <= 0) return;
@@ -172,11 +164,10 @@ class _BattleScreenState extends State<BattleScreen> {
       }
     }
 
-    // Adiciona uma carta por vez para criar o efeito de preenchimento sequencial
     for (int i = 0; i < cardsToDraw; i++) {
       if (deck.isEmpty) break;
 
-      await Future.delayed(const Duration(milliseconds: 150)); // Delay entre cartas
+      await Future.delayed(const Duration(milliseconds: 150));
       setState(() {
         final card = deck.removeLast();
         hand.add(card);
@@ -217,7 +208,6 @@ class _BattleScreenState extends State<BattleScreen> {
     }
     _playCardEffect(card);
 
-    // Remove a carta e move para o descarte
     setState(() {
       final removedCard = hand.removeAt(indexInHand);
       if (removedCard.type != CardActionType.item) {
@@ -238,9 +228,9 @@ class _BattleScreenState extends State<BattleScreen> {
 
         if (isCritical) {
           damage *= 2;
-          _logAction('CRÍTICO! ${damage} de dano!', LogEntryType.damage);
+          _logAction('CRÍTICO! $damage de dano!', LogEntryType.damage);
         } else {
-          _logAction('Ataque: ${damage} de dano.', LogEntryType.damage);
+          _logAction('Ataque: $damage de dano.', LogEntryType.damage);
         }
         setState(() {
           enemy.currentHp -= damage;
@@ -252,7 +242,7 @@ class _BattleScreenState extends State<BattleScreen> {
         setState(() {
           enemy.currentHp -= damage;
         });
-        _logAction('Bola de Fogo: ${damage} de dano!', LogEntryType.damage);
+        _logAction('Bola de Fogo: $damage de dano!', LogEntryType.damage);
         break;
 
       case 'health_potion':
@@ -281,9 +271,7 @@ class _BattleScreenState extends State<BattleScreen> {
     });
   }
 
-  // ATUALIZADO: Esvazia a mão sequencialmente para a animação dos slots
   Future<void> _discardHand() async {
-    // Remove do fim para o começo para animação fluida
     while (hand.isNotEmpty) {
       await Future.delayed(const Duration(milliseconds: 100));
       setState(() {
@@ -293,11 +281,10 @@ class _BattleScreenState extends State<BattleScreen> {
   }
 
   void _enemyTurn() {
-    // Descarta instantaneamente para o turno do inimigo
     while (hand.isNotEmpty) {
        discardPile.add(hand.removeLast());
     }
-    setState(() {}); // Atualiza UI vazia
+    setState(() {});
 
     Future.delayed(const Duration(seconds: 1), () {
       if (!mounted) return;
@@ -374,8 +361,6 @@ class _BattleScreenState extends State<BattleScreen> {
     return Colors.redAccent;
   }
 
-  // --- BUILD UI ---
-
   @override
   Widget build(BuildContext context) {
     bool isBattleOver = hero.currentHp <= 0 || enemy.currentHp <= 0;
@@ -392,7 +377,6 @@ class _BattleScreenState extends State<BattleScreen> {
       ),
       body: Stack(
         children: [
-          // 1. Fundo
           Positioned.fill(
             child: Image.asset(
               backgroundPath,
@@ -404,7 +388,6 @@ class _BattleScreenState extends State<BattleScreen> {
             child: Container(color: Colors.black.withOpacity(0.3)),
           ),
 
-          // 2. Estrutura Principal
           Column(
             children: [
               Expanded(
@@ -461,8 +444,6 @@ class _BattleScreenState extends State<BattleScreen> {
                   ),
                 ),
               ),
-              
-              // --- ÁREA DAS CARTAS (Com Bases Fixas) ---
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -480,8 +461,6 @@ class _BattleScreenState extends State<BattleScreen> {
                     else ...[
                       _buildRerollButton(),
                       const SizedBox(height: 10),
-                      
-                      // NOVO: Row fixa com 5 slots
                       SizedBox(
                         height: 180,
                         child: Center(
@@ -504,20 +483,15 @@ class _BattleScreenState extends State<BattleScreen> {
     );
   }
 
-  // --- NOVO: Lógica dos Slots/Bases ---
-  
   Widget _buildSlot(int index) {
-    // Verifica se existe uma carta para este índice
     final bool hasCard = index < hand.length;
     final BattleCard? card = hasCard ? hand[index] : null;
 
-    // AnimatedSwitcher faz a transição suave entre a base vazia e a carta
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 6), // Espaçamento fixo
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         transitionBuilder: (Widget child, Animation<double> animation) {
-          // Animação de entrada (Slide de baixo + Scale)
           final offsetAnimation = Tween<Offset>(
             begin: const Offset(0, 0.5),
             end: Offset.zero,
@@ -531,10 +505,9 @@ class _BattleScreenState extends State<BattleScreen> {
             ),
           );
         },
-        // Se tiver carta, mostra a carta. Se não, mostra a base vazia.
         child: hasCard 
             ? KeyedSubtree(
-                key: ValueKey(card!.id + index.toString()), // Key única para recriar animação
+                key: ValueKey(card!.id + index.toString()),
                 child: _buildCardWidget(card, index)
               )
             : _buildEmptyBase(),
@@ -542,16 +515,15 @@ class _BattleScreenState extends State<BattleScreen> {
     );
   }
 
-  // Visual da "Base" (Slot vazio)
   Widget _buildEmptyBase() {
     return Container(
       width: 110,
       height: 160,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05), // Fundo translúcido
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1), // Borda sutil
+          color: Colors.white.withOpacity(0.1),
           width: 2,
           style: BorderStyle.solid,
         ),
@@ -565,11 +537,6 @@ class _BattleScreenState extends State<BattleScreen> {
       ),
     );
   }
-
-  // --- WIDGETS AUXILIARES ---
-  
-  // (Os widgets abaixo permanecem praticamente iguais, apenas removi 
-  // a lógica de animação que agora está no AnimatedSwitcher)
 
   Widget _buildLogEntryWidget(BattleLogEntry entry) {
     IconData iconData;
@@ -639,7 +606,6 @@ class _BattleScreenState extends State<BattleScreen> {
     Widget cardContent = Container(
       width: 110,
       height: 160,
-      // Removido Margin aqui pois já está no container do slot
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(12),
@@ -698,15 +664,15 @@ class _BattleScreenState extends State<BattleScreen> {
     return Draggable<BattleCard>(
       data: card,
       feedback: Transform.scale(scale: 1.1, child: Material(color: Colors.transparent, child: cardContent)),
-      childWhenDragging: Opacity(opacity: 0.0, child: cardContent), // Fica transparente para mostrar a base por baixo
+      childWhenDragging: Opacity(opacity: 0.0, child: cardContent),
       onDragStarted: () => setState(() => _draggedCardIndex = indexInHand),
       onDraggableCanceled: (_, __) => setState(() => _draggedCardIndex = null),
       child: cardContent,
     );
   }
 
-  Widget _buildCharacterDisplay(character.GameCharacter char, {bool isHovering = false}) {
-    bool isHero = char is character.HeroCharacter;
+  Widget _buildCharacterDisplay(GameCharacter char, {bool isHovering = false}) {
+    bool isHero = char is HeroCharacter;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

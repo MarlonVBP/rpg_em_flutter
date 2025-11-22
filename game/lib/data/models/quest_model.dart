@@ -1,4 +1,4 @@
-import 'package:teste/models/character_model.dart';
+import 'package:teste/data/models/enemy_character_model.dart';
 
 class Quest {
   final String id;

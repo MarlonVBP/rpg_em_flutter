@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:teste/models/character_model.dart';
+import 'package:teste/data/models/hero_character_model.dart';
 import 'package:teste/providers/game_state.dart';
 import 'package:provider/provider.dart';
 import 'package:teste/screens/create_character_screen.dart';
 
 class CharactersScreen extends StatelessWidget {
-  CharactersScreen({super.key});
+  const CharactersScreen({super.key});
 
-  // Define o ponto de quebra para o layout
   final double wideLayoutBreakpoint = 700;
 
   @override
@@ -30,7 +29,7 @@ class CharactersScreen extends StatelessWidget {
             foregroundColor: Colors.deepPurple,
           ),
           body: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: const AssetImage("images/background_LockerRoom.png"),
                 fit: BoxFit.cover,
@@ -40,29 +39,25 @@ class CharactersScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // *** INÍCIO DA CORREÇÃO ***
-            // Adiciona um LayoutBuilder para tornar a grade responsiva
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // Determina o número de colunas com base na largura da tela
                 final int crossAxisCount =
                     (constraints.maxWidth > wideLayoutBreakpoint)
-                        ? 5  // Layout Largo (Desktop/Web)
-                        : 2; // Layout Estreito (Mobile)
+                        ? 5
+                        : 2;
                 
-                // Ajusta a proporção do card para o layout mobile
                 final double childAspectRatio =
                     (constraints.maxWidth > wideLayoutBreakpoint)
-                        ? 0.75 // Proporção original para 5 colunas
-                        : 0.8; // Um pouco mais largo para 2 colunas
+                        ? 0.75
+                        : 0.8;
 
                 return GridView.builder(
                   padding: const EdgeInsets.all(16.0),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount, // Usa a contagem dinâmica
+                    crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 12.0,
                     mainAxisSpacing: 12.0,
-                    childAspectRatio: childAspectRatio, // Usa a proporção dinâmica
+                    childAspectRatio: childAspectRatio,
                   ),
                   itemCount: gameState.availableHeroes.length,
                   itemBuilder: (context, index) {
@@ -75,7 +70,6 @@ class CharactersScreen extends StatelessWidget {
                 );
               },
             ),
-            // *** FIM DA CORREÇÃO ***
           ),
         );
       },
@@ -112,7 +106,6 @@ class CharactersScreen extends StatelessWidget {
                 child: Image.asset(
                   hero.texturePath, 
                   fit: BoxFit.cover,
-                  // Adiciona um errorBuilder para o caso da imagem não ser encontrada
                   errorBuilder: (context, error, stackTrace) {
                     return Icon(Icons.image_not_supported, color: Colors.grey[600], size: 50);
                   },
@@ -124,7 +117,6 @@ class CharactersScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(8.0),
                 color: Colors.grey[200],
-                // Usa SingleChildScrollView para evitar overflow se o texto for muito grande
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -169,7 +161,7 @@ class CharactersScreen extends StatelessWidget {
             if (isSelected)
               Container(
                 color: Colors.deepPurple,
-                padding: const EdgeInsets.symmetric(vertical: 4.0), // Reduz o tamanho do ícone
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: const Icon(
                   Icons.check_circle,
                   color: Colors.white,

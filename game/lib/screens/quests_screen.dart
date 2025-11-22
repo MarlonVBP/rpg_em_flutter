@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:teste/models/character_model.dart';
+import 'package:teste/data/models/enemy_character_model.dart';
 import 'package:teste/screens/battle_screen.dart' as battle;
 import 'package:provider/provider.dart';
 import 'package:teste/providers/game_state.dart';
-import 'package:teste/models/item_model.dart';
-import 'package:teste/models/quest_model.dart';
+import 'package:teste/data/models/item_model.dart';
+import 'package:teste/data/models/quest_model.dart';
 
 class QuestsScreen extends StatelessWidget {
   QuestsScreen({super.key});

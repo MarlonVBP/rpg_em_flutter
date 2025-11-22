@@ -13,8 +13,7 @@ class AuthWrapper extends StatelessWidget {
 
     if (authProvider.isLoggedIn) {
       return const HomeScreen();
-    } else {
-      return const LoginScreen();
     }
+    return const LoginScreen();
   }
 }

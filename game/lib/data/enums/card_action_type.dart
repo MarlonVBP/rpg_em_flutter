@@ -1,0 +1,1 @@
+enum CardActionType { attack, magic, item, skill }

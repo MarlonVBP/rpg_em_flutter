@@ -19,9 +19,9 @@ class CitiesScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(title: const Text('Escolha o Cenário')),
           body: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage("images/background_scenes.png"),
+                image: AssetImage("images/background_scenes.png"),
                 fit: BoxFit.cover,
               ),
             ),
