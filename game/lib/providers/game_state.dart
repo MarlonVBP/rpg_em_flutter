@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:teste/data/local/all_game_items.dart';
 import 'package:teste/data/local/default_heroes.dart';
@@ -11,6 +13,7 @@ import 'package:teste/data/models/user_model.dart';
 class GameState with ChangeNotifier {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
   final User? _currentUser;
+  final List<StreamSubscription> _subscriptions = [];
 
   HeroCharacter? selectedHero;
   String? selectedScenario;
@@ -23,17 +26,42 @@ class GameState with ChangeNotifier {
 
   GameState(this._currentUser) {
     if (currentUserId != null) {
-      loadHeroes();
       _loadGameData();
     } else {
       availableHeroes = List.from(defaultHeroes);
     }
   }
 
+  @override
+  void dispose() {
+    for (var sub in _subscriptions) {
+      sub.cancel();
+    }
+    _subscriptions.clear();
+    super.dispose();
+  }
+
+  Future<void> _uploadInitialQuestStatus() async {
+    if (currentUserId == null) return;
+
+    final Map<String, bool> initialStatus = {
+      for (var quest in quests) quest.id: false
+    };
+
+    try {
+      await _dbRef.child('users/$currentUserId/questStatus').set(initialStatus);
+    } catch (e) {
+      if (kDebugMode) {
+        print("Erro ao salvar status inicial das missões: $e");
+      }
+    }
+  }
+
   void _loadGameData() {
     if (currentUserId == null) return;
 
-    _dbRef.child('users/$currentUserId').onValue.listen((event) {
+    final goldSub =
+        _dbRef.child('users/$currentUserId').onValue.listen((event) {
       final data = event.snapshot.value;
 
       if (data != null && data is Map) {
@@ -66,34 +94,26 @@ class GameState with ChangeNotifier {
     });
 
     _dbRef.child('users/$currentUserId/questStatus').onValue.listen((event) {
-      final data = event.snapshot.value;
+      _subscriptions.add(goldSub);
 
-      if (data != null && data is Map) {
-        final questStatus = Map<dynamic, dynamic>.from(data);
-        for (final quest in quests) {
-          quest.isCompleted = questStatus[quest.id] as bool? ?? false;
+      final questSub = _dbRef
+          .child('users/$currentUserId/questStatus')
+          .onValue
+          .listen((event) {
+        final data = event.snapshot.value;
+
+        if (data != null && data is Map) {
+          final questStatus = Map<dynamic, dynamic>.from(data);
+          for (final quest in quests) {
+            quest.isCompleted = questStatus[quest.id] as bool? ?? false;
+          }
+        } else {
+          _uploadInitialQuestStatus();
         }
-      } else {
-        _uploadInitialQuestStatus();
-      }
-      notifyListeners();
+        notifyListeners();
+      });
+      _subscriptions.add(questSub);
     });
-  }
-
-  Future<void> _uploadInitialQuestStatus() async {
-    if (currentUserId == null) return;
-
-    final Map<String, bool> initialStatus = {
-      for (var quest in quests) quest.id: false
-    };
-
-    try {
-      await _dbRef.child('users/$currentUserId/questStatus').set(initialStatus);
-    } catch (e) {
-      if (kDebugMode) {
-        print("Erro ao salvar status inicial das missões: $e");
-      }
-    }
   }
 
   Future<void> _saveQuestStatus(String questId, bool isCompleted) async {
@@ -114,7 +134,8 @@ class GameState with ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     try {
-      _dbRef.child('users/$currentUserId/heroes').onValue.listen((event) {
+      final heroesSub =
+          _dbRef.child('users/$currentUserId/heroes').onValue.listen((event) {
         final data = event.snapshot.value;
         if (data != null && data is Map) {
           final heroesMap = Map<String, dynamic>.from(data);
@@ -139,6 +160,7 @@ class GameState with ChangeNotifier {
         }
         notifyListeners();
       });
+      _subscriptions.add(heroesSub);
     } catch (e) {
       if (kDebugMode) {
         print("Erro ao carregar heróis do Firebase: $e");
