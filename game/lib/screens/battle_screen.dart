@@ -481,17 +481,6 @@ class _BattleScreenState extends State<BattleScreen> {
                 ),
               ),
               Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                      Colors.black
-                    ],
-                  ),
-                ),
                 padding: const EdgeInsets.only(top: 20, bottom: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -627,6 +616,7 @@ class _BattleScreenState extends State<BattleScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
+        elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
       ),
       onPressed: () => Navigator.of(context).pop(),

@@ -25,7 +25,7 @@ final allGameBosses = [
   EnemyCharacter(
       name: 'Bruxa Malvada',
       texturePath: 'images/witch.png',
-      hp: 250,
+      hp: 60,
       attack: 15,
       xpReward: 250,
       goldReward: 120),

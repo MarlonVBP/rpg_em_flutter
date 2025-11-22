@@ -13,7 +13,7 @@ final allGameQuests = [
       description: 'Extermine os goblin arruaceiros que roubam a vila.',
       boss: allGameBosses[1]),
   Quest(
-      id: 'boss3',
+      id: 'boss9',
       title: 'Perna de Urubu, Pena de Galinha...',
       description: 'Acabe com os planos maléficos da bruxa.',
       boss: allGameBosses[3]),

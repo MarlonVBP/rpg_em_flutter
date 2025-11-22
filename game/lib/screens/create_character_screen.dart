@@ -17,6 +17,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
 
   final List<String> _avatarImages = [
     'images/archer.png',
+    'images/ladino.png',
     'images/curandeira.png',
     'images/druida.png',
     'images/feiticeira.png',
