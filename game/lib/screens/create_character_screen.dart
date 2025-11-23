@@ -13,7 +13,13 @@ class CreateCharacterScreen extends StatefulWidget {
 class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   final _nameController = TextEditingController();
   String _selectedClass = 'Guerreiro';
-  final List<String> _classes = ['Guerreiro', 'Mago', 'Ladino'];
+  final List<String> _classes = [
+    'Guerreiro',
+    'Mago',
+    'Ladino',
+    'Paladino',
+    'Caçador'
+  ];
 
   final List<String> _avatarImages = [
     'images/archer.png',

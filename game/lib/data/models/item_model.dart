@@ -1,4 +1,14 @@
-enum ItemType { potion, sword, armor, staff }
+enum ItemType { 
+  potion, 
+  sword, 
+  armor, 
+  staff, 
+  axe, 
+  dagger, 
+  bow, 
+  shield, 
+  ring 
+}
 
 class GameItem {
   final String name;

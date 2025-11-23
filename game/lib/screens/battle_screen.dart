@@ -9,6 +9,7 @@ import 'package:teste/data/models/item_model.dart';
 import 'package:teste/providers/game_state.dart';
 import 'package:provider/provider.dart';
 import 'package:teste/data/models/battle_card_model.dart';
+import 'package:teste/services/audio_manager.dart';
 
 class BattleLogEntry {
   final String message;
@@ -66,22 +67,89 @@ class _BattleScreenState extends State<BattleScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startPlayerTurn();
     });
+
+    AudioManager.instance.playMusic('battle_theme.mp3');
+  }
+
+  @override
+  void dispose() {
+    AudioManager.instance.playMusic('background_music.mp3');
+
+    super.dispose();
   }
 
   void _applyItemBonuses() {
     int attackBonus = 0;
     int defenseBonus = 0;
-    for (var item in gameState.playerInventory) {
-      attackBonus += item.attackBonus;
-      defenseBonus += item.defenseBonus;
+
+    // 1. Definir Afinidades
+    // Multiplicador 1.0 = Normal, 1.5 = Bônus de Classe, 0.5 = Penalidade
+    double getMultiplier(ItemType type) {
+      final String heroClass = hero.heroClass;
+
+      switch (heroClass) {
+        case 'Guerreiro':
+          if ([ItemType.sword, ItemType.axe, ItemType.shield, ItemType.armor]
+              .contains(type)) return 1.2;
+          if ([ItemType.staff, ItemType.dagger].contains(type)) return 0.5;
+          break;
+
+        case 'Paladino':
+          if ([ItemType.sword, ItemType.shield, ItemType.ring].contains(type))
+            return 1.3;
+          if ([ItemType.axe, ItemType.bow].contains(type)) return 0.5;
+          break;
+
+        case 'Mago':
+          if ([ItemType.staff, ItemType.ring, ItemType.potion].contains(type))
+            return 1.5;
+          if ([ItemType.sword, ItemType.axe, ItemType.shield, ItemType.armor]
+              .contains(type)) return 0.2; // Mago ruim com armadura pesada
+          break;
+
+        case 'Ladino':
+          if ([ItemType.dagger, ItemType.bow].contains(type)) return 1.5;
+          if ([ItemType.shield, ItemType.axe].contains(type)) return 0.5;
+          break;
+
+        case 'Caçador':
+          if ([ItemType.bow, ItemType.dagger, ItemType.potion].contains(type))
+            return 1.3;
+          if ([ItemType.armor, ItemType.shield].contains(type)) return 0.7;
+          break;
+      }
+      return 1.0; // Padrão
     }
+
+    // 2. Calcular Bônus
+    List<String> affinityLogs = [];
+
+    for (var item in gameState.playerInventory) {
+      double mult = getMultiplier(item.type);
+
+      int effectiveAtk = (item.attackBonus * mult).floor();
+      int effectiveDef = (item.defenseBonus * mult).floor();
+
+      attackBonus += effectiveAtk;
+      defenseBonus += effectiveDef;
+
+      if (mult > 1.0) affinityLogs.add("${item.name} (Afinidade!)");
+      if (mult < 1.0) affinityLogs.add("${item.name} (Ineficaz)");
+    }
+
+    // 3. Aplicar ao Herói
     hero.attack += attackBonus;
     hero.defense += defenseBonus;
+
     if (attackBonus > 0 || defenseBonus > 0) {
       _logAction(
-        'Bônus de itens: ATK+$attackBonus, DEF+$defenseBonus.',
+        'Equipamentos: +$attackBonus ATK, +$defenseBonus DEF.',
         LogEntryType.system,
       );
+      if (affinityLogs.isNotEmpty) {
+        // Log opcional para mostrar afinidades
+        _logAction('Obs: ${affinityLogs.join(", ")}', LogEntryType.system);
+      }
     }
   }
 

@@ -37,6 +37,22 @@ class GameState with ChangeNotifier {
     } else {
       availableHeroes = List.from(defaultHeroes);
     }
+
+    String? purchaseItem(GameItem item) {
+      if (playerInventory.length >= 5) {
+        return 'Inventário cheio! Venda ou use itens primeiro.';
+      }
+      if (playerGold < item.price) {
+        return 'Ouro insuficiente! Você precisa de ${item.price - playerGold} moedas a mais.';
+      }
+
+      playerGold -= item.price;
+      _savePlayerGold();
+
+      addItemToInventory(item);
+
+      return null;
+    }
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:teste/providers/auth_provider.dart';
 import 'package:teste/screens/signup_screen.dart';
+import 'package:teste/services/audio_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,6 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    AudioManager.instance.playMusic('background_music.mp3');
 
     setState(() {
       _isLoading = true;
