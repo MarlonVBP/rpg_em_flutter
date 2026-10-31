@@ -13,12 +13,12 @@ class GameCharacter {
   GameCharacter({
     required this.name,
     required this.texturePath,
-    this.maxHp = 100,
-    this.currentHp = 100,
-    this.maxMana = 50,
-    this.currentMana = 50,
-    this.attack = 10,
-    this.defense = 5,
+    this.maxHp = 120,
+    this.currentHp = 120,
+    this.maxMana = 60,
+    this.currentMana = 60,
+    this.attack = 18,
+    this.defense = 6,
     this.xp = 0,
     this.level = 1,
   });

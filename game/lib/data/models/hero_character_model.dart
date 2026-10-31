@@ -11,7 +11,7 @@ class HeroCharacter extends GameCharacter {
     required super.name,
     required super.texturePath,
     required this.heroClass,
-  })  : xpToNextLevel = 100;
+  }) : xpToNextLevel = 100;
 
   void restoreStats() {
     currentHp = maxHp;
@@ -24,15 +24,21 @@ class HeroCharacter extends GameCharacter {
       return;
     }
 
-    level++;
-    xp = xp - xpToNextLevel;
+    while (xp >= xpToNextLevel && level < maxLevel) {
+      level++;
+      xp = xp - xpToNextLevel;
 
-    maxHp += (15 * (level / 5)).round();
-    attack += (3 * (level / 10)).round() + 1;
-    defense += (2 * (level / 10)).round() + 1;
-    maxMana += (10 * (level / 8)).round();
+      maxHp += 25 + (level * 3);
+      attack += 5 + (level ~/ 2);
+      defense += 3 + (level ~/ 3);
+      maxMana += 10;
 
-    xpToNextLevel = (100 * pow(1.15, level - 1)).round();
+      xpToNextLevel = (100 * pow(1.15, level - 1)).round();
+    }
+
+    if (level >= maxLevel) {
+      xp = 0;
+    }
 
     restoreStats();
   }
@@ -50,7 +56,8 @@ class HeroCharacter extends GameCharacter {
       ..attack = source.attack
       ..defense = source.defense
       ..xp = source.xp
-      ..level = source.level;
+      ..level = source.level
+      ..xpToNextLevel = source.xpToNextLevel;
   }
 
   Map<String, dynamic> toJson() => {
@@ -69,19 +76,36 @@ class HeroCharacter extends GameCharacter {
       };
 
   factory HeroCharacter.fromJson(Map<String, dynamic> json) {
+    final int level = json['level'] ?? 1;
+    final int rawMaxHp = json['maxHp'] ?? 120;
+    final int rawMaxMana = json['maxMana'] ?? 60;
+    final int rawAttack = json['attack'] ?? 18;
+    final int rawDefense = json['defense'] ?? 6;
+
+    // Atualiza automaticamente heróis antigos que estavam com status base legados (100 HP / 10 ATK)
+    final int balancedMaxHp = max(rawMaxHp, 120 + (level - 1) * 28);
+    final int balancedMaxMana = max(rawMaxMana, 60 + (level - 1) * 10);
+    final int balancedAttack = max(rawAttack, 18 + (level - 1) * 5);
+    final int balancedDefense = max(rawDefense, 6 + (level - 1) * 3);
+
+    final String rawTexture =
+        (json['texturePath'] as String?) ?? 'images/warrior.webp';
+    final String webpTexture =
+        rawTexture.replaceAll(RegExp(r'\.(png|jpg)$'), '.webp');
+
     return HeroCharacter(
       name: json['name'],
-      texturePath: json['texturePath'],
+      texturePath: webpTexture,
       heroClass: json['heroClass'],
     )
-      ..maxHp = json['maxHp']
-      ..currentHp = json['currentHp']
-      ..maxMana = json['maxMana']
-      ..currentMana = json['currentMana']
-      ..attack = json['attack']
-      ..defense = json['defense']
-      ..xp = json['xp']
-      ..level = json['level']
-      ..xpToNextLevel = json['xpToNextLevel'];
+      ..maxHp = balancedMaxHp
+      ..currentHp = balancedMaxHp
+      ..maxMana = balancedMaxMana
+      ..currentMana = balancedMaxMana
+      ..attack = balancedAttack
+      ..defense = balancedDefense
+      ..xp = json['xp'] ?? 0
+      ..level = level
+      ..xpToNextLevel = json['xpToNextLevel'] ?? 100;
   }
 }

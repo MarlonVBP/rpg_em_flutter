@@ -13,7 +13,7 @@ class CreateCharacterScreen extends StatefulWidget {
 class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   final _nameController = TextEditingController();
   String _selectedClass = 'Guerreiro';
-  final List<String> _classes = [
+  final List<String> _classes = const [
     'Guerreiro',
     'Mago',
     'Ladino',
@@ -21,16 +21,16 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     'Caçador'
   ];
 
-  final List<String> _avatarImages = [
-    'images/archer.png',
-    'images/ladino.png',
-    'images/curandeira.png',
-    'images/druida.png',
-    'images/feiticeira.png',
-    'images/mage.png',
-    'images/monge.png',
-    'images/templario.png',
-    'images/xama.png',
+  final List<String> _avatarImages = const [
+    'images/archer.webp',
+    'images/ladino.webp',
+    'images/curandeira.webp',
+    'images/druida.webp',
+    'images/feiticeira.webp',
+    'images/mage.webp',
+    'images/monge.webp',
+    'images/templario.webp',
+    'images/xama.webp',
   ];
   String? _selectedImagePath;
 
@@ -38,6 +38,12 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   void initState() {
     super.initState();
     _selectedImagePath = _avatarImages.first;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
   }
 
   void _createCharacter() {
@@ -69,7 +75,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("images/background_LockerRoom.png"),
+            image: AssetImage("images/background_LockerRoom.webp"),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken),
           ),
@@ -78,7 +84,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Card(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(

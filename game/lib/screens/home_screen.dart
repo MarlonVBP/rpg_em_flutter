@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("images/background_home.png"),
+            image: AssetImage("images/background_home.webp"),
             fit: BoxFit.cover,
           ),
         ),
@@ -31,7 +31,6 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
 
   Widget _buildNarrowLayout(
     BuildContext context,
@@ -54,7 +53,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CharactersScreen(),
+                  builder: (context) => const CharactersScreen(),
                 ),
               ),
             ),
@@ -90,7 +89,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => QuestsScreen(),
+                  builder: (context) => const QuestsScreen(),
                 ),
               ),
             ),
@@ -114,7 +113,7 @@ class HomeScreen extends StatelessWidget {
     if (gameState == null ||
         (gameState.currentUserId != null && gameState.quests.isEmpty)) {
       return Card(
-        color: Colors.black.withOpacity(0.75),
+        color: Colors.black.withValues(alpha: 0.75),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 8,
         child: const Padding(
@@ -130,7 +129,7 @@ class HomeScreen extends StatelessWidget {
 
     if (gameState.currentUserId == null) {
       return Card(
-        color: Colors.black.withOpacity(0.75),
+        color: Colors.black.withValues(alpha: 0.75),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 8,
         child: Padding(
@@ -152,10 +151,10 @@ class HomeScreen extends StatelessWidget {
     final totalQuests = gameState.quests.length;
 
     return Card(
-      color: Colors.black.withOpacity(0.75),
+      color: Colors.black.withValues(alpha: 0.75),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 8,
-      shadowColor: Colors.black.withOpacity(0.5),
+      shadowColor: Colors.black.withValues(alpha: 0.5),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -245,8 +244,8 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
         minimumSize: const Size(280, 0),
         backgroundColor: isPrimary
-            ? Colors.red.shade800.withOpacity(0.9)
-            : Colors.deepPurple.shade800.withOpacity(0.9),
+            ? Colors.red.shade800.withValues(alpha: 0.9)
+            : Colors.deepPurple.shade800.withValues(alpha: 0.9),
         foregroundColor: Colors.white,
         textStyle: const TextStyle(
           fontSize: 18,
@@ -261,7 +260,7 @@ class HomeScreen extends StatelessWidget {
               width: 1,
             )),
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.5),
+        shadowColor: Colors.black.withValues(alpha: 0.5),
         alignment: Alignment.centerLeft,
       ),
     );

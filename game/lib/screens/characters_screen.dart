@@ -31,10 +31,10 @@ class CharactersScreen extends StatelessWidget {
           body: Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage("images/background_LockerRoom.png"),
+                image: AssetImage("images/background_LockerRoom.webp"),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                  const Color.fromARGB(159, 0, 0, 0),
+                  Color.fromARGB(159, 0, 0, 0),
                   BlendMode.darken,
                 ),
               ),
@@ -164,7 +164,7 @@ class CharactersScreen extends StatelessWidget {
                 child: const Icon(
                   Icons.check_circle,
                   color: Colors.white,
-                  size: 30, // Tamanho menor
+                  size: 30,
                 ),
               ),
           ],

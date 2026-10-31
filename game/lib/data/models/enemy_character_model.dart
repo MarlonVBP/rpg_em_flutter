@@ -1,7 +1,6 @@
 import 'package:teste/data/models/game_character_model.dart';
 import 'package:teste/data/models/item_model.dart';
 
-
 class EnemyCharacter extends GameCharacter {
   final int xpReward;
   final int goldReward;
@@ -17,10 +16,11 @@ class EnemyCharacter extends GameCharacter {
     this.goldReward = 10,
     this.lootTable = const [],
   }) : super(
-            maxHp: hp,
-            currentHp: hp,
-            maxMana: 0,
-            currentMana: 0);
+          maxHp: hp,
+          currentHp: hp,
+          maxMana: 0,
+          currentMana: 0,
+        );
 
   factory EnemyCharacter.clone(EnemyCharacter source) {
     return EnemyCharacter(
@@ -37,15 +37,19 @@ class EnemyCharacter extends GameCharacter {
   }
 
   factory EnemyCharacter.fromJson(Map<String, dynamic> json) {
+    final String rawPath = json['texturePath'] ?? 'images/placeholder.webp';
+    final String webpPath =
+        rawPath.replaceAll(RegExp(r'\.(png|jpg)$'), '.webp');
+
     return EnemyCharacter(
       name: json['name'] ?? 'Inimigo',
-      texturePath: json['texturePath'] ?? 'images/placeholder.png',
+      texturePath: webpPath,
       hp: json['hp'] ?? 200,
       attack: json['attack'] ?? 15,
       defense: json['defense'] ?? 3,
       xpReward: json['xpReward'] ?? 50,
       goldReward: json['goldReward'] ?? 10,
-      lootTable: [],
+      lootTable: const [],
     );
   }
 }

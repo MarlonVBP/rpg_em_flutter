@@ -5,26 +5,34 @@ class AudioManager {
   static AudioManager get instance => _instance;
 
   final AudioPlayer _musicPlayer = AudioPlayer();
-
   final AudioPlayer _sfxPlayer = AudioPlayer();
 
   bool _isMusicPlaying = false;
+  String? _currentMusicFile;
   double _musicVolume = 0.1;
-  double _sfxVolume = 0.4;
+  final double _sfxVolume = 0.4;
+
+  bool get isMusicPlaying => _isMusicPlaying;
 
   AudioManager._internal();
 
   Future<void> playMusic(String fileName) async {
+    if (_isMusicPlaying && _currentMusicFile == fileName) {
+      return;
+    }
+
     await _musicPlayer.stop();
     await _musicPlayer.setVolume(_musicVolume);
     await _musicPlayer.setReleaseMode(ReleaseMode.loop);
     await _musicPlayer.play(AssetSource('sounds/$fileName'));
 
+    _currentMusicFile = fileName;
     _isMusicPlaying = true;
   }
 
   Future<void> stopMusic() async {
     await _musicPlayer.stop();
+    _currentMusicFile = null;
     _isMusicPlaying = false;
   }
 

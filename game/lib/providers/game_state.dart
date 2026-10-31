@@ -20,39 +20,44 @@ class GameState with ChangeNotifier {
   String? selectedScenario;
   List<GameItem> playerInventory = [];
   List<Quest> quests = [];
-  int playerGold = 0;
+  int playerGold = 50;
   List<HeroCharacter> availableHeroes = [];
 
   String? get currentUserId => _currentUser?.uid;
 
   GameState(this._currentUser) {
-    quests = allGameQuests.map((q) {
-      q.isCompleted = false;
-      return q;
-    }).toList();
+    quests = allGameQuests
+        .map((q) => Quest(
+              id: q.id,
+              title: q.title,
+              description: q.description,
+              boss: q.boss,
+              isCompleted: false,
+            ))
+        .toList();
 
     if (currentUserId != null) {
       _loadGameData();
       loadHeroes();
     } else {
-      availableHeroes = List.from(defaultHeroes);
+      availableHeroes = defaultHeroes.map(HeroCharacter.clone).toList();
+    }
+  }
+
+  String? purchaseItem(GameItem item) {
+    if (playerInventory.length >= 5) {
+      return 'Inventário cheio! Venda ou use itens primeiro.';
+    }
+    if (playerGold < item.price) {
+      return 'Ouro insuficiente! Você precisa de ${item.price - playerGold} moedas a mais.';
     }
 
-    String? purchaseItem(GameItem item) {
-      if (playerInventory.length >= 5) {
-        return 'Inventário cheio! Venda ou use itens primeiro.';
-      }
-      if (playerGold < item.price) {
-        return 'Ouro insuficiente! Você precisa de ${item.price - playerGold} moedas a mais.';
-      }
+    playerGold -= item.price;
+    _savePlayerGold();
 
-      playerGold -= item.price;
-      _savePlayerGold();
+    addItemToInventory(item);
 
-      addItemToInventory(item);
-
-      return null;
-    }
+    return null;
   }
 
   @override
@@ -75,7 +80,7 @@ class GameState with ChangeNotifier {
       await _dbRef.child('users/$currentUserId/questStatus').set(initialStatus);
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint(e.toString());
       }
     }
   }
@@ -90,7 +95,12 @@ class GameState with ChangeNotifier {
       if (data != null && data is Map) {
         final userData = Map<String, dynamic>.from(data);
 
-        playerGold = userData['playerGold'] as int? ?? 0;
+        if (userData.containsKey('playerGold')) {
+          playerGold = userData['playerGold'] as int? ?? 50;
+        } else {
+          playerGold = 50;
+          _savePlayerGold();
+        }
 
         final List<dynamic>? inventoryNames =
             userData['playerInventory'] as List<dynamic>?;
@@ -103,16 +113,19 @@ class GameState with ChangeNotifier {
               playerInventory.add(item);
             } catch (e) {
               if (kDebugMode) {
-                print(e);
+                debugPrint(e.toString());
               }
             }
           }
         }
+      } else {
+        playerGold = 50;
+        _savePlayerGold();
       }
       notifyListeners();
     }, onError: (error) {
       if (kDebugMode) {
-        print(error);
+        debugPrint(error.toString());
       }
     });
     _subscriptions.add(userSub);
@@ -144,7 +157,7 @@ class GameState with ChangeNotifier {
           .update({questId: isCompleted});
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint(e.toString());
       }
     }
   }
@@ -163,7 +176,7 @@ class GameState with ChangeNotifier {
             return HeroCharacter.fromJson(Map<String, dynamic>.from(heroData));
           }).toList();
         } else {
-          availableHeroes = List.from(defaultHeroes);
+          availableHeroes = defaultHeroes.map(HeroCharacter.clone).toList();
           _saveHeroesToFirebase();
         }
 
@@ -182,9 +195,9 @@ class GameState with ChangeNotifier {
       _subscriptions.add(heroesSub);
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint(e.toString());
       }
-      availableHeroes = List.from(defaultHeroes);
+      availableHeroes = defaultHeroes.map(HeroCharacter.clone).toList();
       notifyListeners();
     }
   }
@@ -198,7 +211,7 @@ class GameState with ChangeNotifier {
       await _dbRef.child('users/$currentUserId/heroes').set(heroesMap);
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint(e.toString());
       }
     }
   }
@@ -211,7 +224,7 @@ class GameState with ChangeNotifier {
           .update(hero.toJson());
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint(e.toString());
       }
     }
   }
@@ -224,7 +237,7 @@ class GameState with ChangeNotifier {
           .set(hero.toJson());
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint(e.toString());
       }
     }
   }
@@ -236,7 +249,7 @@ class GameState with ChangeNotifier {
       await _dbRef.child('users/$currentUserId/playerInventory').set(itemNames);
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint(e.toString());
       }
     }
   }
@@ -247,7 +260,7 @@ class GameState with ChangeNotifier {
       await _dbRef.child('users/$currentUserId/playerGold').set(playerGold);
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint(e.toString());
       }
     }
   }

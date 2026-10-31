@@ -6,10 +6,10 @@ class CitiesScreen extends StatelessWidget {
   const CitiesScreen({super.key});
 
   final Map<String, String> availableScenarios = const {
-    'Floresta Sombria': 'images/battle_forest.png',
-    'Picos Congelados': 'images/battle_snow.png',
-    'Ruínas Antigas': 'images/battle_ruins.png',
-    'Cidade Mercante': 'images/battle_city.png',
+    'Floresta Sombria': 'images/battle_forest.webp',
+    'Picos Congelados': 'images/battle_snow.webp',
+    'Ruínas Antigas': 'images/battle_ruins.webp',
+    'Cidade Mercante': 'images/battle_city.webp',
   };
 
   @override
@@ -21,7 +21,7 @@ class CitiesScreen extends StatelessWidget {
           body: Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage("images/background_scenes.png"),
+                image: AssetImage("images/background_scenes.webp"),
                 fit: BoxFit.cover,
               ),
             ),
@@ -89,7 +89,10 @@ class CitiesScreen extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+                    colors: [
+                      Colors.black.withValues(alpha: 0.8),
+                      Colors.transparent
+                    ],
                   ),
                 ),
               ),
@@ -108,7 +111,7 @@ class CitiesScreen extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              Positioned(
+              const Positioned(
                 top: 8,
                 right: 8,
                 child: CircleAvatar(

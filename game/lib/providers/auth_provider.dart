@@ -1,16 +1,24 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:teste/data/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fba;
 
 class AuthProvider with ChangeNotifier {
   final fba.FirebaseAuth _auth = fba.FirebaseAuth.instance;
+  StreamSubscription<fba.User?>? _authSubscription;
   User? _currentUser;
 
   User? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
 
   AuthProvider() {
-    _auth.authStateChanges().listen(_onAuthStateChanged);
+    _authSubscription = _auth.authStateChanges().listen(_onAuthStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 
   void _onAuthStateChanged(fba.User? firebaseUser) {
@@ -25,17 +33,25 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> login(String email, String password) async {
     try {
-      print('Tentando login com: $email');
+      if (kDebugMode) {
+        debugPrint('Tentando login com: $email');
+      }
       await _auth.signInWithEmailAndPassword(email: email, password: password);
-      print('Login bem-sucedido!');
+      if (kDebugMode) {
+        debugPrint('Login bem-sucedido!');
+      }
 
       return true;
     } on fba.FirebaseAuthException catch (e) {
-      print('Falha no login: ${e.message}');
+      if (kDebugMode) {
+        debugPrint('Falha no login: ${e.message}');
+      }
 
       return false;
     } catch (e) {
-      print('Erro desconhecido no login: $e');
+      if (kDebugMode) {
+        debugPrint('Erro desconhecido no login: $e');
+      }
 
       return false;
     }
@@ -43,26 +59,34 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> signup(String email, String password) async {
     try {
-      print('Tentando cadastro real para: $email');
+      if (kDebugMode) {
+        debugPrint('Tentando cadastro real para: $email');
+      }
 
       await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
 
-      print('Cadastro real bem-sucedido para: $email');
+      if (kDebugMode) {
+        debugPrint('Cadastro real bem-sucedido para: $email');
+      }
       return true;
     } on fba.FirebaseAuthException catch (e) {
-      print('Falha no cadastro: ${e.message}');
-      print(e.message);
+      if (kDebugMode) {
+        debugPrint('Falha no cadastro: ${e.message}');
+      }
     } catch (e) {
-      print('Erro desconhecido no cadastro: $e');
-      e.toString();
+      if (kDebugMode) {
+        debugPrint('Erro desconhecido no cadastro: $e');
+      }
       return false;
     }
     return false;
   }
 
   Future<void> logout() async {
-    print('Fazendo logout...');
+    if (kDebugMode) {
+      debugPrint('Fazendo logout...');
+    }
     await _auth.signOut();
   }
 }
